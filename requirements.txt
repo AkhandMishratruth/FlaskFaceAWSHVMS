@@ -1,0 +1,7 @@
+flask
+werkzeug
+boto3
+pillow
+gunicorn
+requests
+pyyaml
