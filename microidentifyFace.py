@@ -19,14 +19,13 @@ def detectFace(faceUrl):
 	body['url'] =str(faceUrl)
 
 	try:	    
-	    conn.request("POST", "/face/v1.0/detect?%s" % params,str(body), headers)
-	    response = conn.getresponse()
-	    data = response.read()
-	    parsedData = json.loads(data)
-
-	    print(parsedData[0]["faceAttributes"]["gender"])
-	    print(parsedData[0]["faceAttributes"]["age"])
-	    return parsedData[0]["faceId"]
+                conn.request("POST", "/face/v1.0/detect?%s" % params,str(body), headers)
+                response = conn.getresponse()
+                data = response.read()
+                parsedData = json.loads(data)
+                print(parsedData[0]["faceAttributes"]["gender"])
+                print(parsedData[0]["faceAttributes"]["age"])
+                return parsedData[0]["faceId"]
 	except Exception as e:
 		print("[Errno {0}] {1}".format(e.errno, e.strerror))
 		print(faceUrl)
