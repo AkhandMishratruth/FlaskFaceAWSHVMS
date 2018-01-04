@@ -8,6 +8,6 @@ import boto3, time
 def copyLocalFileToS3(filename, bucketName):
     boto3.client('s3').upload_file(filename, bucketName, filename)
 t1 = time.time()
-copyLocalFileToS3("shj.jpg", "tempReco")
+copyLocalFileToS3("img.jpg", "tempReco")
 t2=time.time()
 print "Uploading time " + str(t2-t1)

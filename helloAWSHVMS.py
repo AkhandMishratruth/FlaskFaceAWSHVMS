@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request 
+from flask import Flask, render_template, request, jsonify 
 from werkzeug import secure_filename
 import boto3
 import io
@@ -16,7 +16,7 @@ from microidentifyFace import *
 from hvHelper import *;
 
 groupIdHV = "group1"
-UPLOAD_FOLDER = "/"
+testPath = "images"
 
 project_root = os.path.dirname(__file__)
 template_path = os.path.join(project_root, 'templates')
@@ -30,39 +30,44 @@ def hello_world():
 def faceRec():
     arg = request.args
     method = arg['algo']
+    
 
     url = "https://s3.amazonaws.com/tempReco/"+arg['file']
     r = requests.get(url, allow_redirects=True)
-    open('pic.jpg', 'wb').write(r.content)
+    open('images/pic.jpg', 'wb').write(r.content)
 
-    fileLoc = 'pic.jpg'
+    fileLoc = 'images/pic.jpg'
 
     #print(fileLoc)
     if(method.lower()=="ms"):
         t1 = time.time()
         MicrofaceId = detectFace(url)
         #print MicrofaceId
-        toReturnMicrosoft = str(identifyFace(MicrofaceId))
+        toReturnMicrosoft = str(identifyFace(MicrofaceId)["personId"])
         t2 = time.time()
-        toReturnMicrosoft+= " TimeTaken: "+str(t2-t1)
-        return toReturnMicrosoft
+        #toReturnMicrosoft+= " TimeTaken: "+str(t2-t1)
+        print toReturnMicrosoft
+        return jsonify(status="success", result=toReturnMicrosoft)
 
     if(method.lower()=="aws"):
         t1 = time.time()
-        toReturnAWS = "AWS "+str(search(fileLoc))
+        toReturnAWS = str(search(fileLoc))
 
         t2 = time.time()
-        toReturnAWS+=" TimeTaken: "+str(t2-t1)
-        return toReturnAWS
+        #toReturnAWS+=" TimeTaken: "+str(t2-t1)
+        return jsonify(status="success", result=toReturnAWS)
 
     if(method.lower()=="hv"):
         t1 = time.time()
-        BATCH_SIZE = 1
-        res = faceRecognize(fileLoc, groupIdHV, BATCH_SIZE)
-        toReturnHV = "HV "+str(res["result"][0][0]["personId"]) + " " + str(res["result"][0][0]["conf"])
+        BATCH_SIZE = 100
+        facePaths = getFacePaths(testPath)
+        res = faceRecognize(facePaths, groupIdHV, BATCH_SIZE)
+        toReturnHV = str(res["result"][0][0]["personId"])
         t2 = time.time()
-        toReturnHV += " TimeTaken: "+str(t2-t1)
-        return toReturnHV
+        print toReturnHV
+        #toReturnHV += " TimeTaken: "+str(t2-t1)
+        
+        return jsonify(status="success", result=toReturnHV)
 
 if __name__ == '__main__':
-    face.run()
+    face.run(host='0.0.0.0')

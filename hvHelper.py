@@ -7,11 +7,9 @@ baseUrl = "http://54.208.145.18"
 
 def formData(filePaths):
     files = {}
-    fileName = os.path.basename(os.path.normpath(filePaths))
-    #print "_________________________"
-    #print filePaths
-    #print fileName
-    files[fileName] = open(filePaths, 'rb')
+    for path in filePaths:
+        fileName = os.path.basename(os.path.normpath(path))
+        files[fileName] = open(path, 'rb')
     return files
 
 def faceRecognize(imagePaths, groupId, batchSize):
@@ -19,7 +17,6 @@ def faceRecognize(imagePaths, groupId, batchSize):
     url = baseUrl + "/v2/photo/recognize"
     response = None
     imagePathsBatch = []
-    '''
     for i in xrange((len(imagePaths) + batchSize - 1) / batchSize):
         if (i + 1) * batchSize > len(imagePaths):
             imagePathsBatch = imagePaths[i * batchSize:]
@@ -32,30 +29,25 @@ def faceRecognize(imagePaths, groupId, batchSize):
                          str((len(imagePaths) + batchSize - 1) / batchSize) +
                          " batches")
         sys.stdout.flush()
-        '''
-    batchedFiles = formData(imagePaths)
-    batchedFiles["appId"] = (None, appId)
-    batchedFiles["appKey"] = (None, appKey)
-    batchedFiles["groupId"] = (None, groupId)
+        batchedFiles = formData(imagePathsBatch)
+        batchedFiles["appId"] = (None, appId)
+        batchedFiles["appKey"] = (None, appKey)
+        batchedFiles["groupId"] = (None, groupId)
         
-    #print "batchedFiles\n" + str(batchedFiles)
-
-    #print batchedFiles["appId"]
-    #print batchedFiles["appKey"]
-    #print batchedFiles["groupId"]
-    res = requests.post(url, files=batchedFiles)
+        print "batchedFiles\n" + str(batchedFiles)
+        res = requests.post(url, files=batchedFiles)
         
-    uploadingEnds = time.time()
+        uploadingEnds = time.time()
         
-    closeFiles(batchedFiles)
-    res = yaml.safe_load(res.text)
-    if res["status"] != "success":
-        return res
-    if not response:
-        response = res
-    else:
-        response["result"].extend(res["result"])
-    #print "\n time taken "+str(uploadingEnds - uploadingStart)
+        closeFiles(batchedFiles)
+        res = yaml.safe_load(res.text)
+        if res["status"] != "success":
+            return res
+        if not response:
+            response = res
+        else:
+            response["result"].extend(res["result"])
+    print "\n time taken "+str(uploadingEnds - uploadingStart)
     return response
 
 def getFacePaths(basePath):
